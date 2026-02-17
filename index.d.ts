@@ -87,7 +87,15 @@ export type SpinnerName =
 	| 'orangeBluePulse'
 	| 'timeTravel'
 	| 'aesthetic'
-	| 'dwarfFortress';
+	| 'dwarfFortress'
+	| 'graphTraversal'
+	| 'treeGrowth'
+	| 'graphNodes'
+	| 'graphIsomorphism'
+	| 'bfsTraversal'
+	| 'dfsTraversal'
+	| 'treeStructure'
+	| 'adjacencyMatrix';
 
 export type Spinner = {
 	/**

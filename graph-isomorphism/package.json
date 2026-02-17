@@ -1,0 +1,24 @@
+{
+	"name": "graph-isomorphism",
+	"version": "1.0.0",
+	"description": "Graph isomorphism detection and tree structures with visualization",
+	"type": "module",
+	"main": "./src/index.js",
+	"scripts": {
+		"test": "node test/test.js",
+		"example": "node examples/demo.js"
+	},
+	"keywords": [
+		"graph",
+		"isomorphism",
+		"tree",
+		"graph-theory",
+		"algorithms",
+		"data-structures"
+	],
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"cli-spinners": "file:.."
+	}
+}
