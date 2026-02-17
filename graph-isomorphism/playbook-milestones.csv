@@ -1,0 +1,10 @@
+ID,Quarter,Label,Type,Criteria
+"M1","Q1-W6","Alpha Release","Product","Core features + 10 beta users"
+"M2","Q1-W12","Seed ARR $1M","Revenue","Signed contracts, invoices issued"
+"M3","Q2-W4","LATAM Launch","GTM","Spanish l10n + 3 customers live"
+"M4","Q2-W10","Multi-Region Live","Platform","US + EU + APAC active-active"
+"M5","Q3-W2","Mobile Beta","Product","iOS + Android beta shipped"
+"M6","Q3-W8","Partner Portal GA","GTM","10 resellers onboarded"
+"M7","Q4-W4","3× ARR","Revenue","ARR milestone confirmed by Finance"
+"M8","Q4-W10","ISO 27001 Cert","Compliance","Certificate issued by auditor"
+"M9","Q4-W12","Year-End Review","Planning","All annual OKRs graded, next year plan"
