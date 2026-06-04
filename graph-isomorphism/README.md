@@ -7,7 +7,11 @@ A JavaScript library for graph isomorphism detection and tree data structures, w
 - **Graph Data Structures**: Create and manipulate directed and undirected graphs (weighted & unweighted)
 - **Tree Structures**: General trees and binary trees with traversal algorithms
 - **Isomorphism Detection**: Detect if two graphs are isomorphic
-- **Advanced Algorithms**: Dijkstra's shortest path and Prim's minimum spanning tree
+- **Advanced Algorithms**: Complete suite of fundamental graph algorithms
+  - **Shortest Path**: Dijkstra's algorithm
+  - **Minimum Spanning Tree**: Prim's and Kruskal's algorithms
+  - **Traversal**: BFS and DFS with connected components and cycle detection
+  - **Topological Sort**: DFS-based and Kahn's algorithm for DAGs
 - **CLI Visualization**: Progress visualization using beautiful graph-themed spinners from cli-spinners
 
 ## Installation
@@ -171,19 +175,151 @@ console.log(visualizeMST(result, 'A'));
 - Supports progress callbacks for step-by-step visualization
 - Includes ASCII tree visualization
 
-## Examples
+### Kruskal's Minimum Spanning Tree
 
-Run the comprehensive demo:
+```javascript
+import { WeightedGraph, kruskal, formatKruskalMST, compareMSTAlgorithms, prim } from './src/index.js';
 
-```bash
-npm run example
+// Create network graph
+const graph = new WeightedGraph(false);
+graph.addEdge('A', 'B', 4);
+graph.addEdge('A', 'C', 2);
+graph.addEdge('B', 'C', 1);
+graph.addEdge('C', 'D', 3);
+
+// Find MST using Kruskal
+const kruskalResult = kruskal(graph);
+console.log('Total cost:', kruskalResult.totalWeight);
+console.log('MST edges:', kruskalResult.mstEdges);
+
+// Compare with Prim
+const primResult = prim(graph, 'A');
+const comparison = compareMSTAlgorithms(primResult, kruskalResult);
+console.log('Same weight?', comparison.sameWeight);
 ```
 
-This will demonstrate:
-- Graph creation and manipulation
-- Isomorphism detection with progress visualization
-- Different graph-themed spinners
-- Tree structures and traversals
+**Features:**
+- Edge-centric MST algorithm (vs vertex-centric Prim)
+- Time complexity: O(E log E) for sorting edges
+- Uses Union-Find (Disjoint Set) data structure
+- Often faster than Prim for sparse graphs
+
+### BFS & DFS Traversal
+
+```javascript
+import { Graph, bfs, dfs, formatTraversal } from './src/index.js';
+
+const graph = new Graph(false);
+graph.addEdge('A', 'B');
+graph.addEdge('A', 'C');
+graph.addEdge('B', 'D');
+graph.addEdge('C', 'D');
+
+// Breadth-First Search
+const bfsResult = bfs(graph, 'A', {
+  onVisit: (vertex, distance) => {
+    console.log(`Visited ${vertex} at distance ${distance}`);
+  }
+});
+console.log('BFS order:', bfsResult.order);
+
+// Depth-First Search
+const dfsResult = dfs(graph, 'A', {
+  onVisit: (vertex, event, time) => {
+    console.log(`${event} ${vertex} at time ${time}`);
+  }
+});
+console.log('DFS order:', dfsResult.order);
+```
+
+**Features:**
+- **BFS**: Level-order traversal, shortest path in unweighted graphs
+- **DFS**: Explores deeply, useful for cycle detection
+- Time complexity: O(V + E) for both
+- Returns distances, discovery/finish times, and parent pointers
+
+### Connected Components & Cycle Detection
+
+```javascript
+import { Graph, findConnectedComponents, detectCycle } from './src/index.js';
+
+// Find connected components
+const graph1 = new Graph(false);
+graph1.addEdge('A', 'B');
+graph1.addEdge('C', 'D'); // Separate component
+
+const components = findConnectedComponents(graph1);
+console.log('Component count:', components.count);
+console.log('Components:', components.components);
+
+// Detect cycles
+const graph2 = new Graph(true);
+graph2.addEdge('A', 'B');
+graph2.addEdge('B', 'C');
+graph2.addEdge('C', 'A'); // Creates cycle
+
+const cycle = detectCycle(graph2);
+console.log('Has cycle?', cycle.hasCycle);
+console.log('Cycle edge:', cycle.cycleEdge);
+```
+
+**Features:**
+- **Connected Components**: Identifies separate subgraphs
+- **Cycle Detection**: Finds cycles in directed graphs
+- Time complexity: O(V + E)
+- Uses DFS for efficient detection
+
+### Topological Sort
+
+```javascript
+import { Graph, topologicalSort, topologicalSortKahn } from './src/index.js';
+
+// Course prerequisites DAG
+const graph = new Graph(true);
+graph.addEdge('Intro CS', 'Data Structures');
+graph.addEdge('Intro CS', 'Algorithms');
+graph.addEdge('Data Structures', 'Advanced Algorithms');
+graph.addEdge('Algorithms', 'Advanced Algorithms');
+
+// DFS-based (Tarjan's algorithm)
+const result1 = topologicalSort(graph);
+console.log('Order:', result1.sorted);
+
+// Kahn's algorithm (BFS-based)
+const result2 = topologicalSortKahn(graph);
+console.log('Order:', result2.sorted);
+```
+
+**Features:**
+- Linear ordering of DAG vertices respecting edge constraints
+- Two implementations: DFS-based (Tarjan) and BFS-based (Kahn)
+- Time complexity: O(V + E)
+- Detects cycles (returns null for cyclic graphs)
+- Use cases: Build systems, task scheduling, course planning
+
+## Examples
+
+Run the comprehensive algorithm suite demo:
+
+```bash
+node examples/complete-algorithms-demo.js
+```
+
+This demonstrates all algorithms:
+- Kruskal vs Prim MST comparison
+- BFS & DFS traversal with visualization
+- Connected components detection
+- Cycle detection in directed graphs
+- Topological sort (DFS and Kahn's algorithms)
+
+Additional demos:
+
+```bash
+node examples/algorithms-demo.js     # Dijkstra & Prim with city/network graphs
+node examples/organic-standards.js   # Semantic ontology visualization
+node examples/playbook.js            # Planning strategy framework
+node examples/mindmap.js             # Radial mind map renderer
+```
 
 ## New Graph-Themed Spinners
 

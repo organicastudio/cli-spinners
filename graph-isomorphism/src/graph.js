@@ -99,6 +99,14 @@ export class Graph {
 	}
 
 	/**
+	 * Get all vertices
+	 * @returns {Array} Array of vertices
+	 */
+	getVertices() {
+		return Array.from(this.vertices);
+	}
+
+	/**
 	 * Get number of vertices
 	 * @returns {number} Number of vertices
 	 */

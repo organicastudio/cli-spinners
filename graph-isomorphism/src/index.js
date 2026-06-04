@@ -5,7 +5,7 @@
  * - Graph data structures and utilities
  * - Tree data structures (general and binary trees)
  * - Graph isomorphism detection algorithms
- * - Advanced graph algorithms (Dijkstra, Prim's MST)
+ * - Advanced graph algorithms (Dijkstra, Prim, Kruskal, BFS, DFS, Topological Sort)
  */
 
 export { Graph } from './graph.js';
@@ -27,3 +27,21 @@ export {
 	formatMST,
 	visualizeMST
 } from './prim.js';
+export {
+	kruskal,
+	formatKruskalMST,
+	compareMSTAlgorithms
+} from './kruskal.js';
+export {
+	bfs,
+	dfs,
+	findConnectedComponents,
+	detectCycle,
+	formatTraversal
+} from './traversal.js';
+export {
+	topologicalSort,
+	topologicalSortKahn,
+	allTopologicalSorts,
+	formatTopologicalSort
+} from './topological-sort.js';
