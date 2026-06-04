@@ -1,0 +1,10 @@
+Target,Distance,Path
+"Philadelphia","95","NYC → Philadelphia"
+"Boston","215","NYC → Boston"
+"Washington","225","NYC → Washington"
+"Richmond","335","NYC → Washington → Richmond"
+"Albany","385","NYC → Boston → Albany"
+"Pittsburgh","400","NYC → Philadelphia → Pittsburgh"
+"Cleveland","535","NYC → Philadelphia → Pittsburgh → Cleveland"
+"Buffalo","620","NYC → Philadelphia → Pittsburgh → Buffalo"
+"Detroit","705","NYC → Philadelphia → Pittsburgh → Cleveland → Detroit"

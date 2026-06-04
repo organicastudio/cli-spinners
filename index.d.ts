@@ -95,7 +95,11 @@ export type SpinnerName =
 	| 'bfsTraversal'
 	| 'dfsTraversal'
 	| 'treeStructure'
-	| 'adjacencyMatrix';
+	| 'adjacencyMatrix'
+	| 'dijkstraPath'
+	| 'primMST'
+	| 'kruskalMST'
+	| 'topologicalSort';
 
 export type Spinner = {
 	/**

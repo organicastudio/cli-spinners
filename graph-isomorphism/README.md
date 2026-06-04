@@ -4,9 +4,10 @@ A JavaScript library for graph isomorphism detection and tree data structures, w
 
 ## Features
 
-- **Graph Data Structures**: Create and manipulate directed and undirected graphs
+- **Graph Data Structures**: Create and manipulate directed and undirected graphs (weighted & unweighted)
 - **Tree Structures**: General trees and binary trees with traversal algorithms
 - **Isomorphism Detection**: Detect if two graphs are isomorphic
+- **Advanced Algorithms**: Dijkstra's shortest path and Prim's minimum spanning tree
 - **CLI Visualization**: Progress visualization using beautiful graph-themed spinners from cli-spinners
 
 ## Installation
@@ -115,6 +116,61 @@ const result = detectIsomorphismOptimized(g1, g2, {
 });
 ```
 
+### Dijkstra's Shortest Path
+
+```javascript
+import { WeightedGraph, dijkstra, getPath } from './src/index.js';
+
+// Create weighted graph
+const graph = new WeightedGraph(false);
+graph.addEdge('NYC', 'Boston', 215);
+graph.addEdge('NYC', 'Philadelphia', 95);
+graph.addEdge('Philadelphia', 'Pittsburgh', 305);
+graph.addEdge('Pittsburgh', 'Cleveland', 135);
+
+// Find shortest paths from NYC
+const result = dijkstra(graph, 'NYC');
+
+// Get specific path
+const path = getPath(result.previous, 'NYC', 'Cleveland');
+console.log('Path:', path.join(' → '));
+console.log('Distance:', result.distances.get('Cleveland'), 'miles');
+```
+
+**Features:**
+- Finds shortest path from source to all vertices
+- Time complexity: O((V + E) log V)
+- Supports progress callbacks for visualization
+- Works with non-negative edge weights
+
+### Prim's Minimum Spanning Tree
+
+```javascript
+import { WeightedGraph, prim, formatMST, visualizeMST } from './src/index.js';
+
+// Create network graph
+const graph = new WeightedGraph(false);
+graph.addEdge('A', 'B', 4);
+graph.addEdge('A', 'C', 2);
+graph.addEdge('B', 'C', 1);
+graph.addEdge('C', 'D', 3);
+
+// Find MST
+const result = prim(graph, 'A');
+
+console.log('Total cost:', result.totalWeight);
+console.log('MST edges:', result.mstEdges);
+
+// Visualize as tree
+console.log(visualizeMST(result, 'A'));
+```
+
+**Features:**
+- Finds minimum spanning tree for undirected graphs
+- Time complexity: O((V + E) log V)
+- Supports progress callbacks for step-by-step visualization
+- Includes ASCII tree visualization
+
 ## Examples
 
 Run the comprehensive demo:
@@ -131,7 +187,7 @@ This will demonstrate:
 
 ## New Graph-Themed Spinners
 
-This project includes 8 new graph and tree-themed spinners added to cli-spinners:
+This project includes 12 new graph and tree-themed spinners added to cli-spinners:
 
 1. **graphTraversal** - Visualizes nodes being visited in sequence
 2. **treeGrowth** - Shows a tree growing from a seed
@@ -141,6 +197,10 @@ This project includes 8 new graph and tree-themed spinners added to cli-spinners
 6. **dfsTraversal** - Depth-first search visualization
 7. **treeStructure** - Tree building animation
 8. **adjacencyMatrix** - Matrix filling animation
+9. **dijkstraPath** - Shortest path discovery animation
+10. **primMST** - Minimum spanning tree growth
+11. **kruskalMST** - Alternative MST algorithm visualization
+12. **topologicalSort** - DAG ordering animation
 
 ## Graph Isomorphism
 
