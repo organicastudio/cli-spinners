@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # Interactive demo service
+  demo:
+    build:
+      context: .
+      target: demo
+    image: graph-algorithms:demo
+    container_name: graph-algorithms-demo
+    volumes:
+      - ./examples:/app/examples:ro
+    tty: true
+    stdin_open: true
+
+  # Test runner service
+  test:
+    build:
+      context: .
+      target: test
+    image: graph-algorithms:test
+    container_name: graph-algorithms-test
+    volumes:
+      - ./src:/app/src:ro
+      - ./test:/app/test:ro
+    command: sh -c "node test/test.js && node test/algorithms-test.js && node test/advanced-algorithms-test.js"
+
+  # API server for algorithm execution
+  api:
+    build:
+      context: .
+      target: api
+    image: graph-algorithms:api
+    container_name: graph-algorithms-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Development service with hot reload
+  dev:
+    build:
+      context: .
+      target: development
+    image: graph-algorithms:dev
+    container_name: graph-algorithms-dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Node.js debugger
+    environment:
+      - NODE_ENV=development
+    command: sh
+    tty: true
+    stdin_open: true
+
+networks:
+  default:
+    name: graph-algorithms-network

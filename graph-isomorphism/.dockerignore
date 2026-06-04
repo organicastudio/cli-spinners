@@ -1,0 +1,35 @@
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# CSV outputs
+*.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temp files
+*.log
+*.tmp
+tmp/
+temp/
