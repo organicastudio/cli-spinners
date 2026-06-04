@@ -1,0 +1,7 @@
+From,To,Status,Year
+"USDA","EU","Full equivalence","2012"
+"USDA","COR","Full equivalence","2009"
+"USDA","JAS","Partial equivalence","2013"
+"EU","COR","Full equivalence","2011"
+"EU","JAS","Negotiating","2024"
+"JAS","COR","Partial equivalence","2014"
