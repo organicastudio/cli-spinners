@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<!--
+  Graph Algorithms Suite — Observer HUD
+  Sophisticated visualization interface with atmospheric effects
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graph Algorithms · Observer HUD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --canvas:   #050508;
+    --surface:  #1A1A1A;
+    --surface-2:#111;
+    --surface-3:#161616;
+    --accent:   #D4A574;
+    --accent-d: #8B6B47;
+    --accent-l: #E8C49A;
+    --ink:      #E8E6E1;
+    --muted:    #7A776F;
+    --dim:      #555;
+    --line:     #2A2A2A;
+    --ok:       #7BA098;
+    --warn:     #C97B4A;
+    --error:    #AA4444;
+
+    --algo-dijkstra:  #7BA098;
+    --algo-prim:      #9DAA6F;
+    --algo-kruskal:   #6B8AAA;
+    --algo-bfs:       #8B6B9D;
+    --algo-dfs:       #C97B4A;
+    --algo-topo:      #AA6B7E;
+    --algo-component: #6BAAA8;
+    --algo-cycle:     #D4A574;
+    --algo-iso:       #AA4444;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ═══ Atmospheric overlays ═══ */
+  .scanlines {
+    position: fixed; inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(255,255,255,0.013) 3px);
+    pointer-events: none; z-index: 9999;
+    mix-blend-mode: overlay;
+  }
+  .vignette {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none; z-index: 9998;
+  }
+  .grid-overlay {
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(212,165,116,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,165,116,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none; z-index: 0;
+  }
+  .noise {
+    position: fixed; inset: 0;
+    pointer-events: none; opacity: 0.035; z-index: 9997;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+  }
+
+  /* ═══ Layout ═══ */
+  .shell { position: relative; z-index: 1; padding: 20px 28px 40px; }
+
+  /* ═══ Header ═══ */
+  .topbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 12px 20px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .topbar::before, .topbar::after {
+    content: ''; position: absolute;
+    width: 8px; height: 8px;
+    border: 1px solid var(--accent);
+  }
+  .topbar::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .topbar::after  { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+  .brand-block { display: flex; align-items: center; gap: 24px; }
+  .logo-mark {
+    font-weight: 600; font-size: 14px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .logo-mark .tm { color: var(--accent); font-size: 9px; vertical-align: super; }
+  .logo-sub {
+    font-size: 9px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted);
+    margin-top: 1px;
+  }
+  .breadcrumb {
+    font-size: 10px; color: var(--dim);
+    letter-spacing: 0.05em; padding-left: 24px;
+    border-left: 1px solid var(--line);
+  }
+  .breadcrumb .live::before {
+    content: '◆'; color: var(--ok);
+    margin-right: 4px;
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  .top-meters {
+    display: flex; gap: 1px;
+    border: 1px solid var(--line);
+    background: var(--line);
+  }
+  .top-meter {
+    background: var(--surface-3);
+    padding: 8px 16px;
+    text-align: right;
+    min-width: 110px;
+  }
+  .top-meter .lab {
+    font-size: 8px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--muted);
+  }
+  .top-meter .val {
+    font-size: 16px; font-weight: 500;
+    margin-top: 2px;
+  }
+  .top-meter .val.ok { color: var(--ok); }
+  .top-meter .val.amber { color: var(--accent); }
+  .top-meter .val.offline { color: var(--error); }
+
+  /* ═══ Cards ═══ */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+  }
+
+  .card-head {
+    display: flex; align-items: baseline;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--line);
+    gap: 12px;
+  }
+  .card-head .glyph { font-size: 13px; color: var(--accent); }
+  .card-head .title {
+    font-size: 10px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.14em;
+  }
+  .card-head .sub {
+    font-size: 9px; color: var(--muted);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .card-head .spacer { flex: 1; }
+  .card-head .meta {
+    font-size: 9px; color: var(--dim);
+    letter-spacing: 0.05em;
+  }
+
+  .card-body { padding: 14px 16px; }
+  .card-body.flush { padding: 0; }
+
+  /* ═══ Controls ═══ */
+  .controls {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  select, textarea, input {
+    background: var(--surface-3);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 11px;
+  }
+  select { min-width: 200px; }
+  textarea {
+    width: 100%;
+    min-height: 180px;
+    resize: vertical;
+    font-size: 10px;
+  }
+  button {
+    background: var(--accent);
+    color: #000;
+    border: 0;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  button:hover { background: var(--accent-l); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  button.ghost:hover {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .example-row {
+    display: flex; gap: 4px; margin-top: 6px;
+  }
+  .example-btn {
+    padding: 4px 10px;
+    font-size: 9px;
+    background: var(--surface-3);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .example-btn:hover {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  /* ═══ Result display ═══ */
+  .result-pane {
+    background: var(--surface-3);
+    padding: 12px;
+    min-height: 200px;
+    position: relative;
+  }
+  .result-pane pre {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    color: var(--ink);
+  }
+  .result-pane.success::before {
+    content: '✓ SUCCESS';
+    position: absolute;
+    top: 12px; right: 12px;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    color: var(--ok);
+  }
+  .result-pane.error {
+    border-left: 3px solid var(--error);
+  }
+  .result-pane.error::before {
+    content: '⚠ ERROR';
+    color: var(--error);
+  }
+
+  /* ═══ Algorithm Grid ═══ */
+  .algo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .algo-card {
+    background: var(--surface-3);
+    border: 1px solid var(--line);
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .algo-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .algo-card:hover::before { opacity: 1; }
+  .algo-card:hover {
+    border-color: var(--accent);
+    transform: translateX(2px);
+  }
+  .algo-card h4 {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .algo-card .cat {
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .algo-card .comp {
+    font-size: 9px;
+    color: var(--dim);
+    font-family: monospace;
+  }
+
+  /* ═══ Canvas ═══ */
+  #graphCanvas {
+    width: 100%;
+    height: 360px;
+    background: var(--surface-3);
+    display: block;
+    cursor: crosshair;
+  }
+  .canvas-controls {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 8px;
+    background: var(--surface-2);
+    border-top: 1px solid var(--line);
+  }
+
+  /* ═══ Status indicator ═══ */
+  .status-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .status-dot.online { background: var(--ok); animation: pulse 2s ease-in-out infinite; }
+  .status-dot.offline { background: var(--error); }
+  @keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+  /* ═══ Footer ═══ */
+  .footbar {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .footbar a {
+    color: var(--accent-d);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent-d);
+    padding-bottom: 1px;
+  }
+  .footbar a:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ═══ Loading ═══ */
+  .loader {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid var(--line);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div class="noise"></div>
+
+<div class="shell">
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="topbar">
+    <div class="brand-block">
+      <div>
+        <div class="logo-mark">Graph Algorithms<span class="tm">™</span></div>
+        <div class="logo-sub">Observer HUD · v2.0.0</div>
+      </div>
+      <div class="breadcrumb">
+        <span class="live">API ONLINE</span> ·
+        Session <span id="session-id">—</span> ·
+        Schema <span>graph-algorithms-v2.xsd</span>
+      </div>
+    </div>
+    <div class="top-meters">
+      <div class="top-meter"><div class="lab">API Status</div><div class="val" id="m-status">—</div></div>
+      <div class="top-meter"><div class="lab">Algorithms</div><div class="val">9</div></div>
+      <div class="top-meter"><div class="lab">Endpoint</div><div class="val" style="font-size:11px" id="m-endpoint">:3000</div></div>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN GRID ═══ -->
+  <div class="dash-grid">
+
+    <!-- Algorithm Execution Panel -->
+    <section class="card">
+      <header class="card-head">
+        <span class="glyph">◇</span>
+        <span class="title">Algorithm Executor</span>
+        <span class="sub">interactive playground</span>
+        <span class="spacer"></span>
+        <span class="meta" id="exec-meta">—</span>
+      </header>
+      <div class="card-body">
+        <div class="controls">
+          <select id="algorithm">
+            <option value="dijkstra">Dijkstra's Shortest Path</option>
+            <option value="prim">Prim's MST</option>
+            <option value="kruskal">Kruskal's MST</option>
+            <option value="bfs">BFS Traversal</option>
+            <option value="dfs">DFS Traversal</option>
+            <option value="topological-sort">Topological Sort</option>
+            <option value="connected-components">Connected Components</option>
+            <option value="cycle-detection">Cycle Detection</option>
+            <option value="isomorphism">Graph Isomorphism</option>
+          </select>
+          <button onclick="execute()" id="exec-btn">Execute</button>
+        </div>
+
+        <div class="example-row">
+          <span style="font-size:8px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;align-self:center;">Examples:</span>
+          <button class="example-btn" onclick="loadExample(0)">Example 1</button>
+          <button class="example-btn" onclick="loadExample(1)">Example 2</button>
+          <button class="example-btn" onclick="loadExample(2)">Example 3</button>
+        </div>
+
+        <textarea id="requestBody" placeholder='{"edges": [["A","B",1]], "source": "A"}'></textarea>
+      </div>
+    </section>
+
+    <!-- Result Panel -->
+    <section class="card">
+      <header class="card-head">
+        <span class="glyph">◎</span>
+        <span class="title">Execution Result</span>
+        <span class="sub">algorithm output</span>
+      </header>
+      <div class="card-body flush">
+        <div class="result-pane" id="result">
+          <pre style="color:var(--muted);font-size:9px;">Execute an algorithm to see results...</pre>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ═══ ALGORITHM CATALOG ═══ -->
+  <section class="card" style="margin-bottom:16px;">
+    <header class="card-head">
+      <span class="glyph">◆</span>
+      <span class="title">Algorithm Catalog</span>
+      <span class="sub">9 core algorithms</span>
+      <span class="spacer"></span>
+      <span class="meta">Click to load into executor</span>
+    </header>
+    <div class="card-body">
+      <div class="algo-grid" id="algoGrid"></div>
+    </div>
+  </section>
+
+  <!-- ═══ GRAPH VISUALIZER ═══ -->
+  <section class="card">
+    <header class="card-head">
+      <span class="glyph">◈</span>
+      <span class="title">Graph Visualizer</span>
+      <span class="sub">interactive canvas</span>
+      <span class="spacer"></span>
+      <span class="meta">Click to add vertices · Shift+Click to connect</span>
+    </header>
+    <div class="card-body flush">
+      <canvas id="graphCanvas" width="1000" height="360"></canvas>
+      <div class="canvas-controls">
+        <button class="ghost" onclick="clearCanvas()">Clear</button>
+        <button class="ghost" onclick="exportGraph()">Export JSON</button>
+        <button class="ghost" onclick="loadSample('triangle')">△ Triangle</button>
+        <button class="ghost" onclick="loadSample('square')">□ Square</button>
+        <button class="ghost" onclick="loadSample('dag')">⟿ DAG</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footbar">
+    <div>Graph Algorithms Suite · Observer HUD · Session <span id="genstamp">—</span></div>
+    <div>
+      <a href="/">⟵ Dashboard</a> ·
+      <a href="/algorithms">API Docs</a> ·
+      <a href="https://github.com/organicastudio/cli-spinners">GitHub</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+const API_BASE = window.location.protocol + '//' + window.location.hostname + ':3000';
+
+const ALGORITHMS = [
+  { name: 'dijkstra', title: 'Dijkstra', cat: 'Shortest Path', complexity: 'O((V+E) log V)', color: 'var(--algo-dijkstra)' },
+  { name: 'prim', title: 'Prim', cat: 'MST', complexity: 'O((V+E) log V)', color: 'var(--algo-prim)' },
+  { name: 'kruskal', title: 'Kruskal', cat: 'MST', complexity: 'O(E log E)', color: 'var(--algo-kruskal)' },
+  { name: 'bfs', title: 'BFS', cat: 'Traversal', complexity: 'O(V+E)', color: 'var(--algo-bfs)' },
+  { name: 'dfs', title: 'DFS', cat: 'Traversal', complexity: 'O(V+E)', color: 'var(--algo-dfs)' },
+  { name: 'topological-sort', title: 'Topological Sort', cat: 'DAG', complexity: 'O(V+E)', color: 'var(--algo-topo)' },
+  { name: 'connected-components', title: 'Components', cat: 'Analysis', complexity: 'O(V+E)', color: 'var(--algo-component)' },
+  { name: 'cycle-detection', title: 'Cycle Detection', cat: 'Analysis', complexity: 'O(V+E)', color: 'var(--algo-cycle)' },
+  { name: 'isomorphism', title: 'Isomorphism', cat: 'Analysis', complexity: 'O(n!)', color: 'var(--algo-iso)' },
+];
+
+const EXAMPLES = {
+  dijkstra: [
+    { edges: [['A','B',1], ['B','C',2], ['A','C',4]], source: 'A' },
+    { edges: [['NYC','Boston',215], ['NYC','Philly',95], ['Philly','Pittsburgh',305]], source: 'NYC' },
+    { edges: [['A','B',5], ['B','C',3], ['C','D',1], ['A','D',10]], source: 'A' }
+  ],
+  prim: [
+    { edges: [['A','B',4], ['A','C',2], ['B','C',1], ['C','D',3]], start: 'A' },
+    { edges: [['A','B',2], ['A','C',3], ['B','C',1], ['B','D',4]], start: 'A' },
+    { edges: [['X','Y',7], ['Y','Z',5], ['X','Z',12]], start: 'X' }
+  ],
+  kruskal: [
+    { edges: [['A','B',4], ['A','C',2], ['B','C',1], ['C','D',3]] },
+    { edges: [['A','B',1], ['B','C',2], ['C','D',3], ['D','A',4]] },
+    { edges: [['X','Y',5], ['Y','Z',3], ['Z','W',2]] }
+  ],
+  bfs: [
+    { edges: [['A','B'], ['A','C'], ['B','D']], start: 'A' },
+    { edges: [['Root','Left'], ['Root','Right'], ['Left','LL']], start: 'Root' },
+    { edges: [['1','2'], ['2','3'], ['3','4']], start: '1' }
+  ],
+  dfs: [
+    { edges: [['A','B'], ['A','C'], ['B','D']], start: 'A', directed: false },
+    { edges: [['Root','Left'], ['Root','Right']], start: 'Root', directed: false },
+    { edges: [['1','2'], ['2','3'], ['3','4']], start: '1', directed: false }
+  ],
+  'topological-sort': [
+    { edges: [['Intro CS','Algorithms'], ['Algorithms','ML']] },
+    { edges: [['A','B'], ['B','C'], ['A','C']] },
+    { edges: [['Task1','Task2'], ['Task2','Task4'], ['Task3','Task4']] }
+  ],
+  'connected-components': [
+    { edges: [['A','B'], ['B','C'], ['D','E']], directed: false },
+    { edges: [['1','2'], ['3','4'], ['5','6']], directed: false },
+    { edges: [['X','Y'], ['W','V']], directed: false }
+  ],
+  'cycle-detection': [
+    { edges: [['A','B'], ['B','C'], ['C','A']] },
+    { edges: [['A','B'], ['B','C'], ['A','C']] },
+    { edges: [['1','2'], ['2','3'], ['3','4']] }
+  ],
+  isomorphism: [
+    { edges1: [['A','B'], ['B','C'], ['C','A']], edges2: [['1','2'], ['2','3'], ['3','1']], directed: false },
+    { edges1: [['A','B'], ['B','C']], edges2: [['X','Y'], ['Y','Z']], directed: false },
+    { edges1: [['A','B']], edges2: [['X','Y']], directed: false }
+  ]
+};
+
+// ═══ Initialize ═══
+window.addEventListener('DOMContentLoaded', () => {
+  checkStatus();
+  buildAlgoGrid();
+  loadExample(0);
+  setInterval(checkStatus, 10000);
+  document.getElementById('session-id').textContent = Math.random().toString(36).substr(2, 9).toUpperCase();
+  document.getElementById('genstamp').textContent = new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC';
+});
+
+async function checkStatus() {
+  try {
+    const r = await fetch(`${API_BASE}/health`);
+    const d = await r.json();
+    document.getElementById('m-status').innerHTML = '<span class="status-dot online"></span>Online';
+    document.getElementById('m-status').className = 'val ok';
+  } catch (e) {
+    document.getElementById('m-status').innerHTML = '<span class="status-dot offline"></span>Offline';
+    document.getElementById('m-status').className = 'val offline';
+  }
+}
+
+function buildAlgoGrid() {
+  const grid = document.getElementById('algoGrid');
+  grid.innerHTML = ALGORITHMS.map(a => `
+    <div class="algo-card" onclick="selectAlgo('${a.name}')" style="border-left-color:${a.color}">
+      <h4 style="color:${a.color}">${a.title}</h4>
+      <div class="cat">${a.cat}</div>
+      <div class="comp">${a.complexity}</div>
+    </div>
+  `).join('');
+}
+
+function selectAlgo(name) {
+  document.getElementById('algorithm').value = name;
+  loadExample(0);
+}
+
+function loadExample(idx) {
+  const algo = document.getElementById('algorithm').value;
+  const examples = EXAMPLES[algo] || [];
+  const ex = examples[idx] || examples[0] || {};
+  document.getElementById('requestBody').value = JSON.stringify(ex, null, 2);
+}
+
+async function execute() {
+  const algo = document.getElementById('algorithm').value;
+  const body = document.getElementById('requestBody').value;
+  const btn = document.getElementById('exec-btn');
+  const resultPane = document.getElementById('result');
+
+  try {
+    const req = JSON.parse(body);
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> Executing...';
+
+    const r = await fetch(`${API_BASE}/${algo}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req)
+    });
+    const data = await r.json();
+
+    resultPane.className = 'result-pane success';
+    resultPane.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    document.getElementById('exec-meta').textContent = `Completed in ${data.steps || 0} steps`;
+  } catch (err) {
+    resultPane.className = 'result-pane error';
+    resultPane.innerHTML = `<pre style="color:var(--error)">${err.message}</pre>`;
+    document.getElementById('exec-meta').textContent = 'Execution failed';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Execute';
+  }
+}
+
+// ═══ Canvas ═══
+const canvas = document.getElementById('graphCanvas');
+const ctx = canvas ? canvas.getContext('2d') : null;
+let vertices = [];
+let edges = [];
+let selected = null;
+
+function clearCanvas() {
+  vertices = []; edges = []; selected = null;
+  if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function exportGraph() {
+  const edgeList = edges.map(e => [vertices[e.from].label, vertices[e.to].label]);
+  document.getElementById('requestBody').value = JSON.stringify({ edges: edgeList }, null, 2);
+}
+
+function loadSample(type) {
+  clearCanvas();
+  const w = canvas.width, h = canvas.height;
+  const cx = w/2, cy = h/2;
+  if (type === 'triangle') {
+    vertices = [
+      { x: cx, y: cy - 80, label: 'A' },
+      { x: cx - 80, y: cy + 60, label: 'B' },
+      { x: cx + 80, y: cy + 60, label: 'C' }
+    ];
+    edges = [{from:0,to:1},{from:1,to:2},{from:2,to:0}];
+  } else if (type === 'square') {
+    vertices = [
+      { x: cx - 80, y: cy - 80, label: 'A' },
+      { x: cx + 80, y: cy - 80, label: 'B' },
+      { x: cx + 80, y: cy + 80, label: 'C' },
+      { x: cx - 80, y: cy + 80, label: 'D' }
+    ];
+    edges = [{from:0,to:1},{from:1,to:2},{from:2,to:3},{from:3,to:0}];
+  } else if (type === 'dag') {
+    vertices = [
+      { x: cx, y: cy - 100, label: 'Root' },
+      { x: cx - 100, y: cy + 40, label: 'Left' },
+      { x: cx + 100, y: cy + 40, label: 'Right' },
+      { x: cx, y: cy + 140, label: 'End' }
+    ];
+    edges = [{from:0,to:1},{from:0,to:2},{from:1,to:3},{from:2,to:3}];
+  }
+  drawGraph();
+}
+
+function drawGraph() {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Edges
+  ctx.strokeStyle = '#D4A574';
+  ctx.lineWidth = 2;
+  edges.forEach(e => {
+    const v1 = vertices[e.from], v2 = vertices[e.to];
+    ctx.beginPath();
+    ctx.moveTo(v1.x, v1.y);
+    ctx.lineTo(v2.x, v2.y);
+    ctx.stroke();
+  });
+
+  // Vertices
+  vertices.forEach((v, i) => {
+    ctx.fillStyle = selected === i ? '#7BA098' : '#D4A574';
+    ctx.beginPath();
+    ctx.arc(v.x, v.y, 20, 0, 2 * Math.PI);
+    ctx.fill();
+
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 12px "IBM Plex Mono"';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(v.label, v.x, v.y);
+  });
+}
+
+if (canvas) {
+  canvas.addEventListener('click', e => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const clicked = vertices.findIndex(v =>
+      Math.sqrt((v.x - x) ** 2 + (v.y - y) ** 2) < 20
+    );
+
+    if (e.shiftKey && selected !== null && clicked !== -1 && clicked !== selected) {
+      edges.push({ from: selected, to: clicked });
+      selected = null;
+    } else if (clicked !== -1) {
+      selected = clicked;
+    } else {
+      const label = String.fromCharCode(65 + vertices.length);
+      vertices.push({ x, y, label });
+      selected = null;
+    }
+    drawGraph();
+  });
+}
+</script>
+</body>
+</html>
