@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Algorithms Suite - Interactive Dashboard</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --border: #475569;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #ffffff;
+                --bg-secondary: #f8fafc;
+                --bg-tertiary: #e2e8f0;
+                --text-primary: #0f172a;
+                --text-secondary: #475569;
+                --border: #cbd5e1;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .status-card {
+            flex: 1;
+            min-width: 200px;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .status-card h3 {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .status-online { color: var(--success); }
+        .status-offline { color: var(--error); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        select, textarea, input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .result pre {
+            overflow-x: auto;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .error {
+            border-left-color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .success {
+            border-left-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .examples {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .example-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .example-btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .canvas-container {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        #graphCanvas {
+            width: 100%;
+            height: 400px;
+            background: white;
+            border-radius: 4px;
+            cursor: crosshair;
+        }
+
+        .algorithm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .algo-card {
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .algo-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .algo-card h4 {
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .algo-card .complexity {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔗 Graph Algorithms Suite</h1>
+            <p class="subtitle">Interactive API Dashboard & Algorithm Visualizer</p>
+        </header>
+
+        <div class="status-bar">
+            <div class="status-card">
+                <h3>API Status</h3>
+                <div class="status-value" id="apiStatus">Checking...</div>
+            </div>
+            <div class="status-card">
+                <h3>Total Algorithms</h3>
+                <div class="status-value">9</div>
+            </div>
+            <div class="status-card">
+                <h3>API Endpoint</h3>
+                <div class="status-value" style="font-size: 1rem;" id="apiEndpoint">http://localhost:3000</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('playground')">API Playground</button>
+            <button class="tab" onclick="switchTab('algorithms')">Algorithms</button>
+            <button class="tab" onclick="switchTab('visualizer')">Graph Visualizer</button>
+            <button class="tab" onclick="switchTab('docs')">Documentation</button>
+        </div>
+
+        <div id="playground" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h2>🎮 API Playground</h2>
+
+                    <div class="form-group">
+                        <label for="algorithm">Select Algorithm</label>
+                        <select id="algorithm" onchange="loadExample()">
+                            <option value="dijkstra">Dijkstra's Shortest Path</option>
+                            <option value="prim">Prim's MST</option>
+                            <option value="kruskal">Kruskal's MST</option>
+                            <option value="bfs">BFS Traversal</option>
+                            <option value="dfs">DFS Traversal</option>
+                            <option value="topological-sort">Topological Sort</option>
+                            <option value="connected-components">Connected Components</option>
+                            <option value="cycle-detection">Cycle Detection</option>
+                            <option value="isomorphism">Graph Isomorphism</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="requestBody">Request Body (JSON)</label>
+                        <div class="examples">
+                            <button class="example-btn" onclick="loadExample('example1')">Example 1</button>
+                            <button class="example-btn" onclick="loadExample('example2')">Example 2</button>
+                            <button class="example-btn" onclick="loadExample('example3')">Example 3</button>
+                        </div>
+                        <textarea id="requestBody" placeholder='{"edges": [["A","B",1], ["B","C",2]], "source": "A"}'></textarea>
+                    </div>
+
+                    <button onclick="executeAlgorithm()" id="executeBtn">
+                        Execute Algorithm
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h2>📊 Result</h2>
+                    <div id="result">
+                        <p style="color: var(--text-secondary);">Execute an algorithm to see results here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="algorithms" class="tab-content">
+            <div class="card">
+                <h2>📚 Available Algorithms</h2>
+                <div class="algorithm-grid" id="algorithmList"></div>
+            </div>
+        </div>
+
+        <div id="visualizer" class="tab-content">
+            <div class="card">
+                <h2>🎨 Graph Visualizer</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Draw a graph by clicking to add vertices. Shift+click two vertices to connect them.
+                </p>
+
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <button onclick="clearCanvas()">Clear Canvas</button>
+                    <button class="btn-secondary" onclick="exportGraph()">Export Graph</button>
+                    <button class="btn-secondary" onclick="loadSampleGraph('triangle')">Triangle</button>
+                    <button class="btn-secondary" onclick="loadSampleGraph('square')">Square</button>
+                    <button class="btn-secondary" onclick="loadSampleGraph('dag')">DAG</button>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="graphCanvas" width="800" height="400"></canvas>
+                </div>
+
+                <div id="canvasResult" style="margin-top: 1rem;"></div>
+            </div>
+        </div>
+
+        <div id="docs" class="tab-content">
+            <div class="card">
+                <h2>📖 Documentation</h2>
+
+                <h3 style="margin-top: 1.5rem;">API Endpoints</h3>
+                <table style="width: 100%; margin-top: 1rem; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <th style="text-align: left; padding: 0.75rem;">Endpoint</th>
+                            <th style="text-align: left; padding: 0.75rem;">Method</th>
+                            <th style="text-align: left; padding: 0.75rem;">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="endpointsList"></tbody>
+                </table>
+
+                <h3 style="margin-top: 2rem;">Docker Commands</h3>
+                <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 6px; overflow-x: auto; margin-top: 1rem;">
+# Start API server
+docker-compose up -d api
+
+# Run tests
+docker-compose run --rm test
+
+# View logs
+docker-compose logs -f api
+
+# Stop services
+docker-compose down
+                </pre>
+            </div>
+        </div>
+
+        <footer>
+            <p>Graph Algorithms Suite | Built with Docker Compose</p>
+            <p style="margin-top: 0.5rem;">Dijkstra • Prim • Kruskal • BFS • DFS • Topological Sort • Connected Components • Cycle Detection • Isomorphism</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_BASE = window.location.protocol + '//' + window.location.hostname + ':3000';
+
+        const EXAMPLES = {
+            dijkstra: [
+                { edges: [['A','B',1], ['B','C',2], ['A','C',4]], source: 'A' },
+                { edges: [['NYC','Boston',215], ['NYC','Philly',95], ['Philly','Pittsburgh',305]], source: 'NYC' },
+                { edges: [['A','B',5], ['B','C',3], ['C','D',1], ['A','D',10]], source: 'A' }
+            ],
+            prim: [
+                { edges: [['A','B',4], ['A','C',2], ['B','C',1], ['C','D',3]], start: 'A' },
+                { edges: [['A','B',2], ['A','C',3], ['B','C',1], ['B','D',4], ['C','D',5']], start: 'A' },
+                { edges: [['X','Y',7], ['Y','Z',5], ['X','Z',12]], start: 'X' }
+            ],
+            kruskal: [
+                { edges: [['A','B',4], ['A','C',2], ['B','C',1], ['C','D',3]] },
+                { edges: [['A','B',1], ['B','C',2], ['C','D',3], ['D','A',4]] },
+                { edges: [['X','Y',5], ['Y','Z',3], ['Z','W',2], ['X','W',8]] }
+            ],
+            bfs: [
+                { edges: [['A','B'], ['A','C'], ['B','D'], ['C','D']], start: 'A' },
+                { edges: [['Root','Left'], ['Root','Right'], ['Left','LL'], ['Left','LR']], start: 'Root' },
+                { edges: [['1','2'], ['2','3'], ['3','4'], ['1','3']], start: '1' }
+            ],
+            dfs: [
+                { edges: [['A','B'], ['A','C'], ['B','D'], ['C','D']], start: 'A', directed: false },
+                { edges: [['Root','Left'], ['Root','Right'], ['Left','LL']], start: 'Root', directed: false },
+                { edges: [['1','2'], ['2','3'], ['3','4']], start: '1', directed: false }
+            ],
+            'topological-sort': [
+                { edges: [['Intro CS','Algorithms'], ['Algorithms','ML']] },
+                { edges: [['A','B'], ['B','C'], ['A','C']] },
+                { edges: [['Task1','Task2'], ['Task1','Task3'], ['Task2','Task4'], ['Task3','Task4']] }
+            ],
+            'connected-components': [
+                { edges: [['A','B'], ['B','C'], ['D','E']], directed: false },
+                { edges: [['1','2'], ['3','4'], ['5','6']], directed: false },
+                { edges: [['X','Y'], ['Y','Z'], ['W','V']], directed: false }
+            ],
+            'cycle-detection': [
+                { edges: [['A','B'], ['B','C'], ['C','A']] },
+                { edges: [['A','B'], ['B','C'], ['A','C']] },
+                { edges: [['1','2'], ['2','3'], ['3','4'], ['4','2']] }
+            ],
+            isomorphism: [
+                { edges1: [['A','B'], ['B','C'], ['C','A']], edges2: [['1','2'], ['2','3'], ['3','1']], directed: false },
+                { edges1: [['A','B'], ['B','C']], edges2: [['X','Y'], ['Y','Z']], directed: false },
+                { edges1: [['A','B'], ['B','C'], ['C','D'], ['D','A']], edges2: [['1','2'], ['2','3'], ['3','4'], ['4','1']], directed: false }
+            ]
+        };
+
+        let currentAlgorithm = 'dijkstra';
+
+        async function checkApiStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                document.getElementById('apiStatus').innerHTML = '<span class="status-online">● Online</span>';
+            } catch (error) {
+                document.getElementById('apiStatus').innerHTML = '<span class="status-offline">● Offline</span>';
+            }
+        }
+
+        async function loadAlgorithmList() {
+            try {
+                const response = await fetch(`${API_BASE}/algorithms`);
+                const data = await response.json();
+
+                const container = document.getElementById('algorithmList');
+                container.innerHTML = data.algorithms.map(algo => `
+                    <div class="algo-card" onclick="selectAlgorithm('${algo.name}')">
+                        <h4>${algo.name}</h4>
+                        <p style="margin: 0.5rem 0; font-size: 0.875rem;">${algo.category}</p>
+                        <div class="complexity">${algo.complexity}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load algorithms:', error);
+            }
+        }
+
+        function selectAlgorithm(name) {
+            document.getElementById('algorithm').value = name;
+            loadExample();
+            switchTab('playground');
+        }
+
+        function loadExample(which = 'example1') {
+            currentAlgorithm = document.getElementById('algorithm').value;
+            const examples = EXAMPLES[currentAlgorithm] || [];
+
+            const index = which === 'example1' ? 0 : which === 'example2' ? 1 : 2;
+            const example = examples[index] || examples[0] || {};
+
+            document.getElementById('requestBody').value = JSON.stringify(example, null, 2);
+        }
+
+        async function executeAlgorithm() {
+            const algo = document.getElementById('algorithm').value;
+            const body = document.getElementById('requestBody').value;
+            const btn = document.getElementById('executeBtn');
+            const resultDiv = document.getElementById('result');
+
+            try {
+                const requestBody = JSON.parse(body);
+
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loader"></span> Executing...';
+
+                const response = await fetch(`${API_BASE}/${algo}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Execute Algorithm';
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Graph Canvas
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+        let vertices = [];
+        let edges = [];
+        let selectedVertex = null;
+
+        function clearCanvas() {
+            vertices = [];
+            edges = [];
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function exportGraph() {
+            const edgeList = edges.map(e => [vertices[e.from].label, vertices[e.to].label]);
+            const output = { edges: edgeList };
+            document.getElementById('canvasResult').innerHTML = `
+                <div class="result success">
+                    <strong>Exported Graph:</strong>
+                    <pre>${JSON.stringify(output, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        function loadSampleGraph(type) {
+            clearCanvas();
+            if (type === 'triangle') {
+                vertices = [
+                    { x: 400, y: 100, label: 'A' },
+                    { x: 300, y: 300, label: 'B' },
+                    { x: 500, y: 300, label: 'C' }
+                ];
+                edges = [
+                    { from: 0, to: 1 },
+                    { from: 1, to: 2 },
+                    { from: 2, to: 0 }
+                ];
+            } else if (type === 'square') {
+                vertices = [
+                    { x: 250, y: 150, label: 'A' },
+                    { x: 550, y: 150, label: 'B' },
+                    { x: 550, y: 350, label: 'C' },
+                    { x: 250, y: 350, label: 'D' }
+                ];
+                edges = [
+                    { from: 0, to: 1 },
+                    { from: 1, to: 2 },
+                    { from: 2, to: 3 },
+                    { from: 3, to: 0 }
+                ];
+            } else if (type === 'dag') {
+                vertices = [
+                    { x: 400, y: 50, label: 'Root' },
+                    { x: 250, y: 200, label: 'Left' },
+                    { x: 550, y: 200, label: 'Right' },
+                    { x: 400, y: 350, label: 'End' }
+                ];
+                edges = [
+                    { from: 0, to: 1 },
+                    { from: 0, to: 2 },
+                    { from: 1, to: 3 },
+                    { from: 2, to: 3 }
+                ];
+            }
+            drawGraph();
+        }
+
+        function drawGraph() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw edges
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            edges.forEach(edge => {
+                const v1 = vertices[edge.from];
+                const v2 = vertices[edge.to];
+                ctx.beginPath();
+                ctx.moveTo(v1.x, v1.y);
+                ctx.lineTo(v2.x, v2.y);
+                ctx.stroke();
+            });
+
+            // Draw vertices
+            vertices.forEach((v, i) => {
+                ctx.fillStyle = selectedVertex === i ? '#10b981' : '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(v.x, v.y, 20, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(v.label, v.x, v.y);
+            });
+        }
+
+        if (canvas) {
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Check if clicking existing vertex
+                const clickedVertex = vertices.findIndex(v =>
+                    Math.sqrt((v.x - x) ** 2 + (v.y - y) ** 2) < 20
+                );
+
+                if (e.shiftKey && selectedVertex !== null && clickedVertex !== -1 && clickedVertex !== selectedVertex) {
+                    // Create edge
+                    edges.push({ from: selectedVertex, to: clickedVertex });
+                    selectedVertex = null;
+                } else if (clickedVertex !== -1) {
+                    // Select vertex
+                    selectedVertex = clickedVertex;
+                } else {
+                    // Create new vertex
+                    const label = String.fromCharCode(65 + vertices.length);
+                    vertices.push({ x, y, label });
+                    selectedVertex = null;
+                }
+
+                drawGraph();
+            });
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            checkApiStatus();
+            loadAlgorithmList();
+            loadExample();
+            setInterval(checkApiStatus, 10000);
+
+            // Load endpoints for docs
+            const endpoints = [
+                ['GET /health', 'Health check'],
+                ['GET /algorithms', 'List algorithms'],
+                ['POST /dijkstra', 'Shortest path'],
+                ['POST /prim', 'MST (Prim)'],
+                ['POST /kruskal', 'MST (Kruskal)'],
+                ['POST /bfs', 'BFS traversal'],
+                ['POST /dfs', 'DFS traversal'],
+                ['POST /topological-sort', 'Topological sort'],
+                ['POST /connected-components', 'Find components'],
+                ['POST /cycle-detection', 'Detect cycles'],
+                ['POST /isomorphism', 'Graph isomorphism']
+            ];
+
+            document.getElementById('endpointsList').innerHTML = endpoints.map(([endpoint, desc]) => {
+                const [method, path] = endpoint.split(' ');
+                return `
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 0.75rem; font-family: monospace;">${path}</td>
+                        <td style="padding: 0.75rem;"><code style="background: var(--bg-tertiary); padding: 0.25rem 0.5rem; border-radius: 4px;">${method}</code></td>
+                        <td style="padding: 0.75rem; color: var(--text-secondary);">${desc}</td>
+                    </tr>
+                `;
+            }).join('');
+        });
+    </script>
+</body>
+</html>

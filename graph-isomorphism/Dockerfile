@@ -11,6 +11,7 @@ RUN npm ci --only=production && \
 # Copy source code
 COPY src/ ./src/
 COPY examples/ ./examples/
+COPY public/ ./public/
 
 # Development stage
 FROM base AS development

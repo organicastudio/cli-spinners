@@ -60,6 +60,7 @@ curl http://localhost:3000/health
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/` | Web interface dashboard |
 | GET | `/health` | Health check |
 | GET | `/algorithms` | List available algorithms |
 | POST | `/dijkstra` | Shortest path |

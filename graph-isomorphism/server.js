@@ -6,6 +6,9 @@
 
 import http from 'http';
 import { URL } from 'url';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import {
 	Graph,
 	WeightedGraph,
@@ -19,6 +22,9 @@ import {
 	topologicalSort,
 	detectIsomorphism
 } from './src/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
 
@@ -68,9 +74,39 @@ function buildGraph(edges, directed = false, weighted = false) {
 }
 
 /**
+ * Serve static files
+ */
+function serveStatic(req, res, filepath) {
+	try {
+		const content = readFileSync(join(__dirname, 'public', filepath));
+		const ext = filepath.split('.').pop();
+		const contentTypes = {
+			'html': 'text/html',
+			'css': 'text/css',
+			'js': 'application/javascript',
+			'json': 'application/json',
+			'png': 'image/png',
+			'jpg': 'image/jpeg',
+			'svg': 'image/svg+xml'
+		};
+
+		res.writeHead(200, { 'Content-Type': contentTypes[ext] || 'text/plain' });
+		res.end(content);
+	} catch (error) {
+		res.writeHead(404);
+		res.end('Not found');
+	}
+}
+
+/**
  * API Routes
  */
 const routes = {
+	// Serve web interface
+	'GET /': (req, res) => {
+		serveStatic(req, res, 'index.html');
+	},
+
 	// Health check
 	'GET /health': (req, res) => {
 		sendJSON(res, 200, { status: 'ok', timestamp: Date.now() });
