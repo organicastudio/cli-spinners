@@ -1,0 +1,19 @@
+Symbol,Name,Period,Group,Category
+H,Hydrogen,1,1,Nonmetal
+He,Helium,1,18,Noble Gas
+Li,Lithium,2,1,Alkali Metal
+Be,Beryllium,2,2,Alkaline Earth
+B,Boron,2,13,Metalloid
+C,Carbon,2,14,Nonmetal
+N,Nitrogen,2,15,Nonmetal
+O,Oxygen,2,16,Nonmetal
+F,Fluorine,2,17,Halogen
+Ne,Neon,2,18,Noble Gas
+Na,Sodium,3,1,Alkali Metal
+Mg,Magnesium,3,2,Alkaline Earth
+Al,Aluminum,3,13,Post-transition
+Si,Silicon,3,14,Metalloid
+P,Phosphorus,3,15,Nonmetal
+S,Sulfur,3,16,Nonmetal
+Cl,Chlorine,3,17,Halogen
+Ar,Argon,3,18,Noble Gas
