@@ -61,6 +61,7 @@ curl http://localhost:3000/health
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/` | Web interface dashboard |
+| GET | `/hud` | Enhanced HUD interface (Observer™ aesthetics) |
 | GET | `/health` | Health check |
 | GET | `/algorithms` | List available algorithms |
 | POST | `/dijkstra` | Shortest path |

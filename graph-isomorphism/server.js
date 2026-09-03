@@ -107,6 +107,11 @@ const routes = {
 		serveStatic(req, res, 'index.html');
 	},
 
+	// Serve HUD interface
+	'GET /hud': (req, res) => {
+		serveStatic(req, res, 'hud.html');
+	},
+
 	// Health check
 	'GET /health': (req, res) => {
 		sendJSON(res, 200, { status: 'ok', timestamp: Date.now() });

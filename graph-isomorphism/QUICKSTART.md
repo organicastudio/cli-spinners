@@ -94,6 +94,19 @@ const result = topologicalSort(graph);
 console.log(result.sorted); // Course order
 ```
 
+## Web Interfaces
+
+The API server includes two web interfaces:
+
+- **Standard Dashboard** (`/`): Clean, functional interface for testing algorithms
+- **HUD Interface** (`/hud`): Enhanced Observer™ aesthetics with atmospheric effects
+
+```bash
+# Access interfaces
+open http://localhost:3000           # Standard interface
+open http://localhost:3000/hud       # HUD interface
+```
+
 ## Docker Cheat Sheet
 
 ```bash

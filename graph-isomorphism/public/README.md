@@ -2,6 +2,10 @@
 
 Interactive web interface for testing and visualizing graph algorithms.
 
+Available in two styles:
+- **Standard Dashboard** (`/`): Clean, functional interface
+- **HUD Interface** (`/hud`): Enhanced Observer™ aesthetics with atmospheric effects (scanlines, vignette, grid overlay)
+
 ## Quick Start
 
 ```bash
@@ -12,7 +16,8 @@ docker-compose up -d api
 node server.js
 
 # Open in browser
-open http://localhost:3000
+open http://localhost:3000           # Standard interface
+open http://localhost:3000/hud       # HUD interface
 ```
 
 ## Features
