@@ -1,29 +1,29 @@
 {
-        "name": "cli-spinners",
-        "version": "3.2.0",
-        "description": "Spinners for use in the terminal",
-        "license": "MIT",
-        "repository": "sindresorhus/cli-spinners",
-        "funding": "https://github.com/sponsors/sindresorhus",
-        "author": {
-                "name": "Sindre Sorhus",
-                "email": "sindresorhus@gmail.com",
-                "url": "https://sindresorhus.com"
-        },
-        "type": "module",
+	"name": "cli-spinners",
+	"version": "3.2.0",
+	"description": "Spinners for use in the terminal",
+	"license": "MIT",
+	"repository": "sindresorhus/cli-spinners",
+	"funding": "https://github.com/sponsors/sindresorhus",
+	"author": {
+		"name": "Sindre Sorhus",
+		"email": "sindresorhus@gmail.com",
+		"url": "https://sindresorhus.com"
+	},
+	"type": "module",
         "exports": {
-                ".": {
-                        "types": "./index.d.ts",
-                        "default": "./index.js"
-                },
-                "./appworld/common": {
-                        "types": "./appworld/common/index.d.ts",
-                        "default": "./appworld/common/index.js"
-                }
+                "types": "./index.d.ts",
+                "default": "./index.js",
+                "./appworld/common": "./appworld/common.js",
+                "./appworld/organization": "./appworld/organization.js",
+                "./appworld/cli/appworld": "./appworld/cli/appworld.js"
         },
         "sideEffects": false,
         "engines": {
                 "node": ">=18.20"
+        },
+        "bin": {
+                "appworld": "./appworld/cli/appworld.js"
         },
         "scripts": {
                 "//test": "xo && ava && tsc --noEmit index.d.ts",
@@ -34,34 +34,30 @@
                 "index.js",
                 "index.d.ts",
                 "spinners.json",
-                "appworld",
-                "bin"
+                "appworld"
         ],
-        "keywords": [
-                "cli",
-                "spinner",
-                "spinners",
-                "terminal",
-                "term",
-                "console",
-                "ascii",
-                "unicode",
-                "loading",
-                "indicator",
-                "progress",
-                "busy",
-                "wait",
-                "idle",
-                "json"
-        ],
-        "devDependencies": {
-                "ava": "^6.1.2",
-                "log-update": "^6.0.0",
-                "string-length": "^6.0.0",
-                "typescript": "^5.4.5",
-                "xo": "^0.58.0"
-        },
-        "bin": {
-                "appworld-organize": "./bin/appworld-organize.js"
-        }
+	"keywords": [
+		"cli",
+		"spinner",
+		"spinners",
+		"terminal",
+		"term",
+		"console",
+		"ascii",
+		"unicode",
+		"loading",
+		"indicator",
+		"progress",
+		"busy",
+		"wait",
+		"idle",
+		"json"
+	],
+	"devDependencies": {
+		"ava": "^6.1.2",
+		"log-update": "^6.0.0",
+		"string-length": "^6.0.0",
+		"typescript": "^5.4.5",
+		"xo": "^0.58.0"
+	}
 }
