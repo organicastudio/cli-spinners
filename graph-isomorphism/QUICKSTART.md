@@ -96,15 +96,17 @@ console.log(result.sorted); // Course order
 
 ## Web Interfaces
 
-The API server includes two web interfaces:
+The API server includes three web interfaces:
 
 - **Standard Dashboard** (`/`): Clean, functional interface for testing algorithms
 - **HUD Interface** (`/hud`): Enhanced Observer™ aesthetics with atmospheric effects
+- **Immersive Terminal** (`/immersive`): Full immersive experience with particles, scanlines, and animations
 
 ```bash
 # Access interfaces
 open http://localhost:3000           # Standard interface
 open http://localhost:3000/hud       # HUD interface
+open http://localhost:3000/immersive # Immersive terminal
 ```
 
 ## Docker Cheat Sheet

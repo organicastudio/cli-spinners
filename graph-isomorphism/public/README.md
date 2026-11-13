@@ -2,9 +2,10 @@
 
 Interactive web interface for testing and visualizing graph algorithms.
 
-Available in two styles:
+Available in three styles:
 - **Standard Dashboard** (`/`): Clean, functional interface
 - **HUD Interface** (`/hud`): Enhanced Observer™ aesthetics with atmospheric effects (scanlines, vignette, grid overlay)
+- **Immersive Terminal** (`/immersive`): Full immersive experience with animated particles, scanlines, and terminal aesthetic
 
 ## Quick Start
 
@@ -18,6 +19,7 @@ node server.js
 # Open in browser
 open http://localhost:3000           # Standard interface
 open http://localhost:3000/hud       # HUD interface
+open http://localhost:3000/immersive # Immersive terminal
 ```
 
 ## Features

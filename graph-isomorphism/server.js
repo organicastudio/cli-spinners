@@ -112,6 +112,11 @@ const routes = {
 		serveStatic(req, res, 'hud.html');
 	},
 
+	// Serve immersive interface
+	'GET /immersive': (req, res) => {
+		serveStatic(req, res, 'immersive.html');
+	},
+
 	// Health check
 	'GET /health': (req, res) => {
 		sendJSON(res, 200, { status: 'ok', timestamp: Date.now() });

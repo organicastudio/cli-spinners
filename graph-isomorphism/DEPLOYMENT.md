@@ -62,6 +62,7 @@ curl http://localhost:3000/health
 |--------|----------|-------------|
 | GET | `/` | Web interface dashboard |
 | GET | `/hud` | Enhanced HUD interface (Observer™ aesthetics) |
+| GET | `/immersive` | Immersive terminal interface (particles, scanlines, animations) |
 | GET | `/health` | Health check |
 | GET | `/algorithms` | List available algorithms |
 | POST | `/dijkstra` | Shortest path |

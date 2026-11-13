@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graph Algorithms · Immersive Terminal</title>
+<style>
+:root {
+  --void: #000000;
+  --deep: #0A0E14;
+  --surface: #151922;
+  --panel: #1C2128;
+  --border: #2D333B;
+  --accent: #00D9FF;
+  --accent-dim: #0099BB;
+  --success: #00FF88;
+  --warning: #FFB800;
+  --error: #FF4444;
+  --text: #E6EDF3;
+  --text-dim: #7D8590;
+  --text-muted: #484F58;
+  --glow: rgba(0, 217, 255, 0.5);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Animated background grid */
+.bg-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.15;
+  z-index: 0;
+  animation: gridPulse 8s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.25; }
+}
+
+/* Particles */
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: float linear infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-100px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Scanlines */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(0, 217, 255, 0.02) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 2;
+  pointer-events: none;
+  animation: scan 0.5s linear infinite;
+}
+
+@keyframes scan {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+/* Vignette */
+.vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.8) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Main container */
+.container {
+  position: relative;
+  z-index: 3;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 40px 32px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+  position: relative;
+}
+
+.logo {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--accent), var(--success));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  text-shadow: 0 0 40px var(--glow);
+  animation: glow 3s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+}
+
+.tagline {
+  color: var(--text-dim);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-dot.offline {
+  background: var(--error);
+  box-shadow: 0 0 8px var(--error);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 32px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+  transition: left 0.5s;
+}
+
+.tab:hover::before {
+  left: 100%;
+}
+
+.tab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tab.active {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 16px rgba(0, 217, 255, 0.3);
+}
+
+/* Content panels */
+.content {
+  display: none;
+  animation: fadeIn 0.5s;
+}
+
+.content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Grid layouts */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent), var(--success));
+}
+
+.card-header {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+/* Terminal */
+.terminal {
+  background: var(--deep);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 32px rgba(0, 217, 255, 0.2);
+  min-height: 400px;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.terminal-header {
+  background: var(--panel);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.terminal-dot.red { background: #FF5F56; }
+.terminal-dot.yellow { background: #FFBD2E; }
+.terminal-dot.green { background: #27C93F; }
+
+.terminal-title {
+  flex: 1;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+.terminal-body {
+  padding: 20px;
+  font-size: 13px;
+  line-height: 1.8;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.terminal-line {
+  margin-bottom: 4px;
+}
+
+.terminal-prompt {
+  color: var(--success);
+}
+
+.terminal-output {
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  font-family: inherit;
+}
+
+/* Form controls */
+.control-group {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+select, input, textarea {
+  background: var(--deep);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  transition: all 0.3s;
+  outline: none;
+}
+
+select:focus, input:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+}
+
+textarea {
+  width: 100%;
+  min-height: 200px;
+  resize: vertical;
+  font-family: "JetBrains Mono", monospace;
+}
+
+button {
+  background: var(--accent);
+  color: var(--void);
+  border: none;
+  padding: 12px 32px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+button:hover {
+  box-shadow: 0 0 20px var(--glow);
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Algorithm cards */
+.algo-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.algo-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 20px rgba(0, 217, 255, 0.2);
+  transform: translateY(-4px);
+}
+
+.algo-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.algo-category {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.algo-complexity {
+  font-family: "JetBrains Mono", monospace;
+  color: var(--success);
+  font-size: 12px;
+}
+
+/* Canvas */
+.canvas-container {
+  position: relative;
+  background: var(--deep);
+  border: 1px solid var(--accent);
+  margin-bottom: 16px;
+  box-shadow: 0 0 32px rgba(0, 217, 255, 0.2);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 400px;
+  cursor: crosshair;
+}
+
+/* Loading */
+.loading {
+  display: none;
+  text-align: center;
+  padding: 40px;
+}
+
+.loading.active {
+  display: block;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-dim);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Pre and code */
+pre {
+  background: var(--deep);
+  border: 1px solid var(--border);
+  padding: 16px;
+  overflow-x: auto;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+code {
+  color: var(--success);
+  font-family: inherit;
+}
+</style>
+</head>
+<body>
+  <!-- Background effects -->
+  <div class="bg-grid"></div>
+  <div class="particles" id="particles"></div>
+  <div class="scanlines"></div>
+  <div class="vignette"></div>
+
+  <!-- Main content -->
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1 class="logo">Graph Algorithms</h1>
+      <p class="tagline">Immersive Terminal Interface</p>
+      <div class="status-bar">
+        <div class="status-item">
+          <div class="status-dot" id="apiStatus"></div>
+          <span id="apiStatusText">API Offline</span>
+        </div>
+        <div class="status-item">
+          <span id="algorithmCount">9 Algorithms</span>
+        </div>
+        <div class="status-item">
+          <span id="timestamp">--:--:--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('terminal')">Terminal</div>
+      <div class="tab" onclick="switchTab('algorithms')">Algorithms</div>
+      <div class="tab" onclick="switchTab('visualizer')">Visualizer</div>
+      <div class="tab" onclick="switchTab('docs')">Documentation</div>
+    </div>
+
+    <!-- Terminal Tab -->
+    <div class="content active" id="terminal">
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <h2 class="card-header">Request</h2>
+            <div class="control-group">
+              <select id="algorithmSelect" style="flex: 1;">
+                <option value="dijkstra">Dijkstra's Shortest Path</option>
+                <option value="prim">Prim's MST</option>
+                <option value="kruskal">Kruskal's MST</option>
+                <option value="bfs">Breadth-First Search</option>
+                <option value="dfs">Depth-First Search</option>
+                <option value="topological-sort">Topological Sort</option>
+                <option value="connected-components">Connected Components</option>
+                <option value="cycle-detection">Cycle Detection</option>
+                <option value="isomorphism">Graph Isomorphism</option>
+              </select>
+            </div>
+            <textarea id="requestBody" spellcheck="false">{
+  "edges": [
+    ["A", "B", 1],
+    ["B", "C", 2],
+    ["A", "C", 4]
+  ],
+  "source": "A"
+}</textarea>
+            <div class="control-group" style="margin-top: 16px;">
+              <button onclick="executeAlgorithm()">Execute</button>
+              <button class="secondary" onclick="loadExample()">Load Example</button>
+              <button class="secondary" onclick="clearTerminal()">Clear</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="terminal">
+            <div class="terminal-header">
+              <div class="terminal-dot red"></div>
+              <div class="terminal-dot yellow"></div>
+              <div class="terminal-dot green"></div>
+              <div class="terminal-title">Output</div>
+            </div>
+            <div class="terminal-body" id="terminalOutput">
+              <div class="terminal-line">
+                <span class="terminal-prompt">$</span>
+                <span class="terminal-output">Ready for execution...</span>
+              </div>
+            </div>
+          </div>
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Processing...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Algorithms Tab -->
+    <div class="content" id="algorithms">
+      <div class="grid" id="algorithmGrid"></div>
+    </div>
+
+    <!-- Visualizer Tab -->
+    <div class="content" id="visualizer">
+      <div class="card">
+        <h2 class="card-header">Graph Visualizer</h2>
+        <div class="canvas-container">
+          <canvas id="graphCanvas" width="800" height="400"></canvas>
+        </div>
+        <div class="control-group">
+          <button onclick="clearCanvas()">Clear</button>
+          <button class="secondary" onclick="loadSample('triangle')">Triangle</button>
+          <button class="secondary" onclick="loadSample('square')">Square</button>
+          <button class="secondary" onclick="exportGraph()">Export JSON</button>
+        </div>
+        <p style="color: var(--text-dim); margin-top: 16px;">
+          Click to add vertices • Shift+Click two vertices to connect
+        </p>
+      </div>
+    </div>
+
+    <!-- Documentation Tab -->
+    <div class="content" id="docs">
+      <div class="card">
+        <h2 class="card-header">API Reference</h2>
+        <pre><code>POST /dijkstra        # Shortest path algorithm
+POST /prim            # Minimum spanning tree (vertex-centric)
+POST /kruskal         # Minimum spanning tree (edge-centric)
+POST /bfs             # Breadth-first search
+POST /dfs             # Depth-first search
+POST /topological-sort # DAG ordering
+POST /connected-components # Find graph components
+POST /cycle-detection # Detect cycles
+POST /isomorphism     # Graph isomorphism check
+
+GET /health           # API health status
+GET /algorithms       # List all algorithms</code></pre>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API_BASE = '';
+let canvas, ctx, vertices = [], edges = [], selectedVertex = null;
+
+// Initialize particles
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.width = particle.style.height = (Math.random() * 3 + 1) + 'px';
+    particle.style.animationDuration = (Math.random() * 20 + 10) + 's';
+    particle.style.animationDelay = Math.random() * 10 + 's';
+    container.appendChild(particle);
+  }
+}
+
+// Update timestamp
+function updateTimestamp() {
+  const now = new Date();
+  document.getElementById('timestamp').textContent = now.toLocaleTimeString();
+}
+
+// Check API status
+async function checkAPI() {
+  try {
+    const res = await fetch(API_BASE + '/health');
+    const data = await res.json();
+    document.getElementById('apiStatus').classList.remove('offline');
+    document.getElementById('apiStatusText').textContent = 'API Online';
+    return true;
+  } catch {
+    document.getElementById('apiStatus').classList.add('offline');
+    document.getElementById('apiStatusText').textContent = 'API Offline';
+    return false;
+  }
+}
+
+// Load algorithms
+async function loadAlgorithms() {
+  try {
+    const res = await fetch(API_BASE + '/algorithms');
+    const data = await res.json();
+    const grid = document.getElementById('algorithmGrid');
+    grid.innerHTML = data.algorithms.map(algo => `
+      <div class="algo-card" onclick="selectAlgorithm('${algo.name}')">
+        <div class="algo-name">${algo.name}</div>
+        <div class="algo-category">${algo.category}</div>
+        <div class="algo-complexity">${algo.complexity}</div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load algorithms:', e);
+  }
+}
+
+// Switch tabs
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tab).classList.add('active');
+}
+
+// Select algorithm
+function selectAlgorithm(name) {
+  document.getElementById('algorithmSelect').value = name;
+  switchTab('terminal');
+  loadExample();
+}
+
+// Execute algorithm
+async function executeAlgorithm() {
+  const algo = document.getElementById('algorithmSelect').value;
+  const body = document.getElementById('requestBody').value;
+  const output = document.getElementById('terminalOutput');
+  const loading = document.getElementById('loading');
+
+  try {
+    const request = JSON.parse(body);
+    loading.classList.add('active');
+
+    const res = await fetch(API_BASE + '/' + algo, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request)
+    });
+
+    const data = await res.json();
+    loading.classList.remove('active');
+
+    output.innerHTML += `
+      <div class="terminal-line" style="margin-top: 16px;">
+        <span class="terminal-prompt">$</span>
+        <span style="color: var(--accent);">POST /${algo}</span>
+      </div>
+      <div class="terminal-line">
+        <pre class="terminal-output">${JSON.stringify(data, null, 2)}</pre>
+      </div>
+    `;
+    output.scrollTop = output.scrollHeight;
+  } catch (e) {
+    loading.classList.remove('active');
+    output.innerHTML += `
+      <div class="terminal-line" style="margin-top: 16px;">
+        <span style="color: var(--error);">Error: ${e.message}</span>
+      </div>
+    `;
+  }
+}
+
+// Load example
+function loadExample() {
+  const algo = document.getElementById('algorithmSelect').value;
+  const examples = {
+    'dijkstra': { edges: [["A","B",1],["B","C",2],["A","C",4]], source: "A" },
+    'prim': { edges: [["A","B",4],["B","C",2],["A","C",5]], start: "A" },
+    'kruskal': { edges: [["A","B",4],["B","C",2],["A","C",5]] },
+    'bfs': { edges: [["A","B"],["B","C"],["A","D"]], start: "A" },
+    'dfs': { edges: [["A","B"],["B","C"],["A","D"]], start: "A" },
+    'topological-sort': { edges: [["A","B"],["B","C"],["A","C"]] },
+    'connected-components': { edges: [["A","B"],["C","D"]] },
+    'cycle-detection': { edges: [["A","B"],["B","C"],["C","A"]] },
+    'isomorphism': { edges1: [["A","B"],["B","C"],["C","A"]], edges2: [["1","2"],["2","3"],["3","1"]], directed: false }
+  };
+  document.getElementById('requestBody').value = JSON.stringify(examples[algo] || {}, null, 2);
+}
+
+// Clear terminal
+function clearTerminal() {
+  document.getElementById('terminalOutput').innerHTML = `
+    <div class="terminal-line">
+      <span class="terminal-prompt">$</span>
+      <span class="terminal-output">Ready for execution...</span>
+    </div>
+  `;
+}
+
+// Canvas functions
+function initCanvas() {
+  canvas = document.getElementById('graphCanvas');
+  ctx = canvas.getContext('2d');
+  canvas.addEventListener('click', handleCanvasClick);
+}
+
+function handleCanvasClick(e) {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  if (e.shiftKey && selectedVertex !== null) {
+    const clicked = vertices.find(v => Math.hypot(v.x - x, v.y - y) < 20);
+    if (clicked && clicked !== selectedVertex) {
+      edges.push([selectedVertex.label, clicked.label]);
+      selectedVertex = null;
+      drawGraph();
+    }
+  } else {
+    const clicked = vertices.find(v => Math.hypot(v.x - x, v.y - y) < 20);
+    if (clicked) {
+      selectedVertex = clicked;
+    } else {
+      const label = String.fromCharCode(65 + vertices.length);
+      vertices.push({ x, y, label });
+      drawGraph();
+    }
+  }
+}
+
+function drawGraph() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw edges
+  ctx.strokeStyle = '#00D9FF';
+  ctx.lineWidth = 2;
+  edges.forEach(([from, to]) => {
+    const v1 = vertices.find(v => v.label === from);
+    const v2 = vertices.find(v => v.label === to);
+    if (v1 && v2) {
+      ctx.beginPath();
+      ctx.moveTo(v1.x, v1.y);
+      ctx.lineTo(v2.x, v2.y);
+      ctx.stroke();
+    }
+  });
+
+  // Draw vertices
+  vertices.forEach(v => {
+    ctx.fillStyle = '#00D9FF';
+    ctx.beginPath();
+    ctx.arc(v.x, v.y, 20, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.font = '14px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(v.label, v.x, v.y);
+  });
+}
+
+function clearCanvas() {
+  vertices = [];
+  edges = [];
+  selectedVertex = null;
+  drawGraph();
+}
+
+function loadSample(type) {
+  if (type === 'triangle') {
+    vertices = [
+      { x: 400, y: 100, label: 'A' },
+      { x: 300, y: 250, label: 'B' },
+      { x: 500, y: 250, label: 'C' }
+    ];
+    edges = [['A','B'], ['B','C'], ['C','A']];
+  } else if (type === 'square') {
+    vertices = [
+      { x: 300, y: 150, label: 'A' },
+      { x: 500, y: 150, label: 'B' },
+      { x: 500, y: 300, label: 'C' },
+      { x: 300, y: 300, label: 'D' }
+    ];
+    edges = [['A','B'], ['B','C'], ['C','D'], ['D','A']];
+  }
+  drawGraph();
+}
+
+function exportGraph() {
+  const json = JSON.stringify({ edges }, null, 2);
+  document.getElementById('requestBody').value = json;
+  switchTab('terminal');
+}
+
+// Initialize
+window.addEventListener('load', () => {
+  createParticles();
+  initCanvas();
+  updateTimestamp();
+  setInterval(updateTimestamp, 1000);
+  checkAPI();
+  setInterval(checkAPI, 30000);
+  loadAlgorithms();
+  loadExample();
+});
+</script>
+</body>
+</html>
